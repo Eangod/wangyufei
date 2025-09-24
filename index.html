@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>我的高清360全景图</title>
+    <style>
+        /* 设置全景图容器的样式，使其充满整个浏览器视口 */
+        #pano {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- 这个div就是全景图将要渲染的区域 -->
+    <div id="pano"></div>
+
+    <!-- 引入Marzipano库 -->
+    <script src="js/marzipano.js"></script>
+
+    <script>
+        // 获取我们刚刚定义的容器元素
+        var panoElement = document.getElementById('pano');
+
+        // 1. 创建Marzipano查看器实例，这是最主要的核心对象
+        var viewer = new Marzipano.Viewer(panoElement);
+
+        // 2. 指定全景图片的来源。请将路径修改为你自己的图片路径。
+        // 提示：如果你的图片非常大，可以考虑生成多分辨率图层以获得更好的加载性能，但基础版可以先这样设置。
+        var source = Marzipano.ImageUrlSource.fromString("images/panorama.jpg");
+
+        // 3. 定义几何结构，告诉查看器这是一张Equirectangular格式的全景图。
+        // 这里的`[ { width: 4000 } ]`是一个简化设置，它会自动计算其他尺寸。
+        // 对于超高清图片，你可以提供更详细的层级，例如：[ { width: 8000 }, { width: 4000 } ]
+        var geometry = new Marzipano.EquirectGeometry([{ width: 4000 }]);
+
+        // 4. 定义视图的初始参数和限制（例如视野、缩放限制）
+        var viewLimiter = Marzipano.RectilinearView.limit.traditional(
+            1024, // 最大分辨率
+            100 * Math.PI / 180 // 最大视野（100度）
+        );
+        var view = new Marzipano.RectilinearView(
+            { yaw: Math.PI }, // 初始视角，Math.PI相当于180度，即看向图片后方
+            viewLimiter
+        );
+
+        // 5. 创建一个场景，将图片源、几何结构和视图设置关联起来
+        var scene = viewer.createScene({
+            source: source,
+            geometry: geometry,
+            view: view,
+            pinFirstLevel: true // 固定第一层级，有助于提高清晰度
+        });
+
+        // 6. 切换到该场景，开始显示全景图！
+        scene.switchTo();
+    </script>
+</body>
+</html>
